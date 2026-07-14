@@ -1,0 +1,27 @@
+# warden contracts workspace
+#
+# NOTE: generated policy crates under ./generated/ are intentionally NOT
+# workspace members — each carries its own `[workspace]` table so the harness
+# can build them in isolation with `cargo test --manifest-path`.
+[workspace]
+resolver = "2"
+members = [
+    "policy-core",
+    "smart-account-lite",
+    "fixtures/mock-protocols",
+]
+
+[workspace.dependencies]
+# Pinned against the verified crates.io stable at scaffold time (2026-07).
+# Bump alongside your target protocol; re-run the full harness after any bump.
+soroban-sdk = "27.0.0"
+
+[profile.release]
+opt-level = "z"
+overflow-checks = true
+debug = 0
+strip = "symbols"
+debug-assertions = false
+panic = "abort"
+codegen-units = 1
+lto = true

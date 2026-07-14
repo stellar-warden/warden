@@ -1,0 +1,15 @@
+[package]
+name = "smart-account-lite"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["lib", "cdylib"]
+
+[dependencies]
+soroban-sdk = { workspace = true }
+policy-core = { path = "../policy-core", package = "warden-policy-core" }
+
+[dev-dependencies]
+soroban-sdk = { workspace = true, features = ["testutils"] }
