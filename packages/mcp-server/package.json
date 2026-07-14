@@ -1,0 +1,22 @@
+{
+  "name": "@warden/mcp-server",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "warden-mcp": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc -p .",
+    "typecheck": "tsc -p . --noEmit"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@warden/core": "workspace:*",
+    "@warden/recorder": "workspace:*",
+    "@warden/synthesizer": "workspace:*",
+    "@warden/harness": "workspace:*",
+    "zod": "^3.24.0",
+    "@warden/sdk": "workspace:*"
+  }
+}
