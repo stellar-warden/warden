@@ -1,0 +1,75 @@
+{
+  "version": 1,
+  "id": "blend",
+  "createdAt": "2026-07-14T12:08:57.728Z",
+  "network": {
+    "rpcUrl": "https://soroban-testnet.stellar.org",
+    "passphrase": "Test SDF Network ; September 2015"
+  },
+  "account": "CB2RBKMXNPAQYHJE2QLFRXQIUQQSB4UGGLD7ACCOTNQCLKY5QGQVOUAL",
+  "label": "claim Blend-style yield, convert to payroll transfers",
+  "entries": [
+    {
+      "credentialAddress": "CB2RBKMXNPAQYHJE2QLFRXQIUQQSB4UGGLD7ACCOTNQCLKY5QGQVOUAL",
+      "rootInvocation": {
+        "contract": "CCM75FZFQF6TWWWZZS42EGZKKLXXAXLEM6NAE4D6TBWMQFTTPM5EP7UT",
+        "function": "claim",
+        "args": [
+          {
+            "kind": "address",
+            "value": "CB2RBKMXNPAQYHJE2QLFRXQIUQQSB4UGGLD7ACCOTNQCLKY5QGQVOUAL"
+          },
+          {
+            "kind": "u32",
+            "value": 3
+          }
+        ],
+        "subInvocations": []
+      }
+    },
+    {
+      "credentialAddress": "CB2RBKMXNPAQYHJE2QLFRXQIUQQSB4UGGLD7ACCOTNQCLKY5QGQVOUAL",
+      "rootInvocation": {
+        "contract": "CB4IRTHLL5IDQ757NZ626KCL22G6G4D4GO2DDCS4T5BRHMAYU4I5B6BU",
+        "function": "transfer",
+        "args": [
+          {
+            "kind": "address",
+            "value": "CB2RBKMXNPAQYHJE2QLFRXQIUQQSB4UGGLD7ACCOTNQCLKY5QGQVOUAL"
+          },
+          {
+            "kind": "address",
+            "value": "GARNFLMQEPASAHXE7VCXP3RBAFIBGMIXHB5WPENYOZ7262FCIJGNWHTZ"
+          },
+          {
+            "kind": "i128",
+            "value": "1500000000"
+          }
+        ],
+        "subInvocations": []
+      }
+    },
+    {
+      "credentialAddress": "CB2RBKMXNPAQYHJE2QLFRXQIUQQSB4UGGLD7ACCOTNQCLKY5QGQVOUAL",
+      "rootInvocation": {
+        "contract": "CB4IRTHLL5IDQ757NZ626KCL22G6G4D4GO2DDCS4T5BRHMAYU4I5B6BU",
+        "function": "transfer",
+        "args": [
+          {
+            "kind": "address",
+            "value": "CB2RBKMXNPAQYHJE2QLFRXQIUQQSB4UGGLD7ACCOTNQCLKY5QGQVOUAL"
+          },
+          {
+            "kind": "address",
+            "value": "GD3INLKR3EKXNZ53ZFD3ZCJGJJMGJ5SKAMHUADLM7RUMA4L5NRLDGM72"
+          },
+          {
+            "kind": "i128",
+            "value": "900000000"
+          }
+        ],
+        "subInvocations": []
+      }
+    }
+  ]
+}

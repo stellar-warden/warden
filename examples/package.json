@@ -1,0 +1,12 @@
+{
+  "name": "@warden/examples",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "dependencies": {
+    "@stellar/stellar-sdk": "^16.0.1",
+    "@warden/core": "workspace:*",
+    "@warden/harness": "workspace:*",
+    "@warden/synthesizer": "workspace:*"
+  }
+}
