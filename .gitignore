@@ -1,0 +1,7 @@
+node_modules/
+dist/
+target/
+.warden/
+contracts/generated/*
+!contracts/generated/.gitkeep
+.env
