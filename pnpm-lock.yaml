@@ -35,6 +35,12 @@ importers:
       '@warden/harness':
         specifier: workspace:*
         version: link:../packages/harness
+      '@warden/recorder':
+        specifier: workspace:*
+        version: link:../packages/recorder
+      '@warden/sdk':
+        specifier: workspace:*
+        version: link:../packages/sdk
       '@warden/synthesizer':
         specifier: workspace:*
         version: link:../packages/synthesizer

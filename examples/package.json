@@ -7,6 +7,8 @@
     "@stellar/stellar-sdk": "^16.0.1",
     "@warden/core": "workspace:*",
     "@warden/harness": "workspace:*",
+    "@warden/recorder": "workspace:*",
+    "@warden/sdk": "workspace:*",
     "@warden/synthesizer": "workspace:*"
   }
 }
