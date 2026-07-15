@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import type { GeneratedCrate } from "@warden/synthesizer";
 
@@ -31,7 +31,37 @@ export async function writeCrate(baseDir: string, crate: GeneratedCrate, clean =
     await mkdir(dirname(path), { recursive: true });
     await writeFile(path, content, "utf8");
   }
+  await pinLockfile(dir).catch((err: Error) => {
+    console.warn(`warning: could not pin ${dir}/Cargo.lock (${err.message}); cargo test may hit E0277 in soroban-env-host`);
+  });
   return dir;
+}
+
+/**
+ * soroban-env-host declares `ed25519-dalek = ">=2.0.0"`, an open range a
+ * fresh resolve fills with 3.x — whose rand_core is incompatible with the
+ * host's rand_chacha 0.3 (E0277 compiling soroban-env-host). A pin in the
+ * generated manifest can't force the transitive choice, so fix the lockfile
+ * itself. No-op once upstream caps the range below 3.
+ */
+const ED25519_DALEK_PIN = "2.2.0";
+
+async function pinLockfile(dir: string, timeoutMs = 300_000): Promise<void> {
+  const manifest = join(dir, "Cargo.toml");
+  const gen = await run("cargo", ["generate-lockfile", "--manifest-path", manifest], timeoutMs);
+  if (gen.code !== 0) throw new Error(`cargo generate-lockfile failed: ${gen.output.slice(-300)}`);
+  const lock = await readFile(join(dir, "Cargo.lock"), "utf8");
+  const versions = [...lock.matchAll(/name = "ed25519-dalek"\nversion = "([^"]+)"/g)]
+    .map((m) => m[1]!)
+    .filter((v) => v !== ED25519_DALEK_PIN);
+  for (const v of versions) {
+    const upd = await run(
+      "cargo",
+      ["update", "--manifest-path", manifest, "-p", `ed25519-dalek@${v}`, "--precise", ED25519_DALEK_PIN],
+      timeoutMs,
+    );
+    if (upd.code !== 0) throw new Error(`cargo update --precise ${ED25519_DALEK_PIN} failed: ${upd.output.slice(-300)}`);
+  }
 }
 
 export async function runCargoTests(crateDir: string, timeoutMs = 600_000): Promise<HarnessResult> {
