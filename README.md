@@ -23,6 +23,20 @@ cargo test --manifest-path contracts/generated/warden_policy_blend/Cargo.toml
 
 That last command compiles a policy that was *synthesized from a recording* and runs its generated permit/deny matrix under the real soroban-sdk.
 
+## Live on testnet
+
+The full loop — record → synthesize → verify → install → **enforced by consensus** — runs
+against deployed contracts. A committed run
+([examples/blend-yield-claim/testnet-run.json](examples/blend-yield-claim/testnet-run.json)):
+the owner installs a synthesized policy on a deployed
+[smart-account-lite](https://stellar.expert/explorer/testnet/contract/CA6ZBKTMVZC66Q4VGGSZCCEVCPCBWNENE3H7NORVMKAJOZQSOOX2YHCU)
+instance, a session key claims yield and makes a payroll transfer within its cap
+(both permitted), and a second transfer that busts the weekly cap is
+[**rejected on-chain**](https://stellar.expert/explorer/testnet/tx/eb13f1030478c5acf9c5fb2232a504ca775f5870c2782d203f06265b3c785510)
+by `__check_auth`. Reproduce with `scripts/deploy-testnet.sh` +
+`pnpm tsx examples/blend-yield-claim/run-testnet.ts` — see the
+[example README](examples/blend-yield-claim/README.md) for all four transaction hashes.
+
 ## Talk to it (MCP)
 
 Copy `.mcp.json.example` into your Claude configuration (adjust paths), then:
@@ -55,6 +69,6 @@ examples/blend-yield-claim    full offline pipeline run (CI: `differential` job)
 
 ## Status & roadmap
 
-Working scaffold: the full record→propose→synthesize→verify→install loop runs against the bundled `smart-account-lite` account. Tranche work (tracked in RFP-MAPPING.md): OpenZeppelin smart-accounts codegen backend, Claude Skill packaging, wallet-embedded UX with a C-Address-cohort wallet, the SEP-41 subscription and bounded-Soroswap walkthroughs on testnet, fee-sponsored installs, and an external audit of the synthesizer.
+The full record→propose→synthesize→verify→install loop runs end-to-end on testnet against the bundled `smart-account-lite` account (see **Live on testnet** above). Tranche work (tracked in RFP-MAPPING.md): OpenZeppelin smart-accounts codegen backend, Claude Skill packaging, wallet-embedded UX with a C-Address-cohort wallet, the SEP-41 subscription and bounded-Soroswap walkthroughs on testnet, fee-sponsored installs, and an external audit of the synthesizer.
 
 Apache-2.0. Built in the open.
