@@ -45,3 +45,27 @@ export function getLedgerEntries(
 export function getLatestLedger(cfg: RpcConfig): Promise<{ sequence: number }> {
   return rpcCall(cfg, "getLatestLedger", {});
 }
+
+export interface SendTxResult {
+  status: "PENDING" | "DUPLICATE" | "TRY_AGAIN_LATER" | "ERROR";
+  hash: string;
+  errorResultXdr?: string;
+  diagnosticEventsXdr?: string[];
+}
+
+export function sendTransaction(cfg: RpcConfig, txB64: string): Promise<SendTxResult> {
+  return rpcCall<SendTxResult>(cfg, "sendTransaction", { transaction: txB64 });
+}
+
+export interface GetTxResult {
+  status: "SUCCESS" | "NOT_FOUND" | "FAILED";
+  txHash?: string;
+  ledger?: number;
+  resultXdr?: string;
+  resultMetaXdr?: string;
+  diagnosticEventsXdr?: string[];
+}
+
+export function getTransaction(cfg: RpcConfig, hash: string): Promise<GetTxResult> {
+  return rpcCall<GetTxResult>(cfg, "getTransaction", { hash });
+}

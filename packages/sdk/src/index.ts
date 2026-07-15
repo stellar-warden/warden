@@ -2,13 +2,21 @@ import {
   Account,
   Address,
   Contract,
+  Keypair,
   Operation,
   TransactionBuilder,
+  hash,
   nativeToScVal,
   xdr,
 } from "@stellar/stellar-sdk";
 import type { PolicySpec } from "@warden/core";
-import { getLedgerEntries, simulateTransaction } from "@warden/recorder";
+import {
+  getLedgerEntries,
+  getTransaction,
+  sendTransaction,
+  simulateTransaction,
+  type GetTxResult,
+} from "@warden/recorder";
 
 /**
  * @warden/sdk — the install seam.
@@ -167,6 +175,72 @@ function storedRuleToScVal(r: StoredRule): xdr.ScVal {
     entry("function", nativeToScVal(r.function, { type: "symbol" })),
     entry("window", nativeToScVal(r.window, { type: "u64" })),
   ]);
+}
+
+/**
+ * Sign one SorobanAuthorizationEntry for smart-account-lite with an ed25519
+ * key (owner or session). Sets signatureExpirationLedger, signs the
+ * ENVELOPE_TYPE_SOROBAN_AUTHORIZATION preimage, and encodes the signature as
+ * the contract's `AccSignature { public_key, signature }` struct (a single
+ * ScMap — NOT the Vec the built-in account contract expects).
+ */
+export function signSmartAccountAuthEntry(
+  entry: xdr.SorobanAuthorizationEntry,
+  signer: Keypair,
+  validUntilLedger: number,
+  networkPassphrase: string,
+): xdr.SorobanAuthorizationEntry {
+  const creds = entry.credentials().address();
+  creds.signatureExpirationLedger(validUntilLedger);
+  const preimage = xdr.HashIdPreimage.envelopeTypeSorobanAuthorization(
+    new xdr.HashIdPreimageSorobanAuthorization({
+      networkId: hash(Buffer.from(networkPassphrase)),
+      nonce: creds.nonce(),
+      signatureExpirationLedger: validUntilLedger,
+      invocation: entry.rootInvocation(),
+    }),
+  );
+  const payload = hash(preimage.toXDR());
+  const sym = (s: string) => nativeToScVal(s, { type: "symbol" });
+  creds.signature(
+    xdr.ScVal.scvMap([
+      new xdr.ScMapEntry({ key: sym("public_key"), val: xdr.ScVal.scvBytes(signer.rawPublicKey()) }),
+      new xdr.ScMapEntry({ key: sym("signature"), val: xdr.ScVal.scvBytes(signer.sign(payload)) }),
+    ]),
+  );
+  return entry;
+}
+
+/** Submit a signed tx and poll until it leaves PENDING. Throws on ERROR/FAILED with the result XDR. */
+export async function submitTx(
+  cfg: { rpcUrl: string },
+  txB64: string,
+  timeoutMs = 60_000,
+): Promise<GetTxResult & { hash: string }> {
+  const sent = await sendTransaction(cfg, txB64);
+  if (sent.status === "ERROR")
+    throw new TxFailedError(sent.hash, sent.errorResultXdr, sent.diagnosticEventsXdr);
+  const deadline = Date.now() + timeoutMs;
+  for (;;) {
+    const res = await getTransaction(cfg, sent.hash);
+    if (res.status === "SUCCESS") return { ...res, hash: sent.hash };
+    if (res.status === "FAILED")
+      throw new TxFailedError(sent.hash, res.resultXdr, res.diagnosticEventsXdr);
+    if (Date.now() > deadline) throw new Error(`tx ${sent.hash} still pending after ${timeoutMs}ms`);
+    await new Promise((r) => setTimeout(r, 1500));
+  }
+}
+
+/** A transaction the network rejected — carries the hash so deny-case rejections are citable. */
+export class TxFailedError extends Error {
+  constructor(
+    public readonly hash: string,
+    public readonly resultXdr?: string,
+    public readonly diagnosticEventsXdr?: string[],
+  ) {
+    super(`transaction ${hash} failed${resultXdr ? `: ${resultXdr}` : ""}`);
+    this.name = "TxFailedError";
+  }
 }
 
 async function fetchSequence(cfg: { rpcUrl: string }, g: string): Promise<string> {
