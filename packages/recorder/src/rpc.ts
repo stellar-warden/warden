@@ -2,6 +2,13 @@
  * Raw Soroban RPC client. fetch + JSON-RPC 2.0, nothing else.
  * @stellar/stellar-sdk is used in this package only for XDR construction/parsing.
  */
+import { getDefaultAutoSelectFamilyAttemptTimeout, setDefaultAutoSelectFamilyAttemptTimeout } from "node:net";
+
+// Node's happy-eyeballs gives each address family 250ms to connect; on a slow
+// link every attempt times out and fetch dies with a bare "fetch failed".
+const CONNECT_ATTEMPT_MS = 5_000;
+if (getDefaultAutoSelectFamilyAttemptTimeout() < CONNECT_ATTEMPT_MS)
+  setDefaultAutoSelectFamilyAttemptTimeout(CONNECT_ATTEMPT_MS);
 
 export interface RpcConfig {
   rpcUrl: string;
@@ -14,6 +21,10 @@ export async function rpcCall<T>(cfg: RpcConfig, method: string, params: unknown
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ jsonrpc: "2.0", id: nextId++, method, params }),
+  }).catch((err: unknown) => {
+    const cause = (err as { cause?: { code?: string; message?: string } }).cause;
+    const detail = cause?.code ?? cause?.message ?? (err instanceof Error ? err.message : String(err));
+    throw new Error(`RPC ${method}: cannot reach ${cfg.rpcUrl} (${detail})`);
   });
   if (!res.ok) throw new Error(`RPC HTTP ${res.status} from ${cfg.rpcUrl}`);
   const body = (await res.json()) as { result?: T; error?: { code: number; message: string; data?: unknown } };

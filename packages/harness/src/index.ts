@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import type { GeneratedCrate } from "@warden/synthesizer";
 
@@ -25,7 +25,12 @@ export interface HarnessResult {
 
 export async function writeCrate(baseDir: string, crate: GeneratedCrate, clean = true): Promise<string> {
   const dir = resolve(baseDir, crate.crateName);
-  if (clean) await rm(dir, { recursive: true, force: true });
+  // Clean stale sources but keep cargo's build cache — wiping `target/`
+  // recompiles soroban-sdk from scratch (minutes) on every harness run.
+  if (clean) {
+    const stale = (await readdir(dir).catch(() => [] as string[])).filter((name) => name !== "target");
+    await Promise.all(stale.map((name) => rm(join(dir, name), { recursive: true, force: true })));
+  }
   for (const [rel, content] of Object.entries(crate.files)) {
     const path = join(dir, rel);
     await mkdir(dirname(path), { recursive: true });
