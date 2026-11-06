@@ -22,5 +22,14 @@
   },
   "engines": {
     "node": ">=22"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stellar-warden/warden.git",
+    "directory": "packages/harness"
+  },
+  "homepage": "https://github.com/stellar-warden/warden#readme",
+  "bugs": {
+    "url": "https://github.com/stellar-warden/warden/issues"
   }
 }
