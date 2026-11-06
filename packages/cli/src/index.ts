@@ -30,16 +30,16 @@ import {
   parseRecording,
   type PolicySpec,
   type ScValue,
-} from "@warden/core";
-import { recordContractCall } from "@warden/recorder";
+} from "@stellar-warden/core";
+import { recordContractCall } from "@stellar-warden/recorder";
 import {
   anthropicChat,
   generateCrate,
   HeuristicAdvisor,
   inferPolicy,
   ModelAdvisor,
-} from "@warden/synthesizer";
-import { runCargoTests, writeCrate } from "@warden/harness";
+} from "@stellar-warden/synthesizer";
+import { runCargoTests, writeCrate } from "@stellar-warden/harness";
 import {
   buildAddSignerTx,
   buildInvokeTx,
@@ -49,7 +49,7 @@ import {
   specToStoredRules,
   submitTx,
   TxFailedError,
-} from "@warden/sdk";
+} from "@stellar-warden/sdk";
 
 const HOME = resolve(process.env.WARDEN_HOME ?? ".warden");
 const GENERATED = resolve(process.env.WARDEN_GENERATED_DIR ?? "contracts/generated");

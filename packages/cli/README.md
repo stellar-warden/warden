@@ -1,4 +1,4 @@
-# @warden/cli
+# @stellar-warden/cli
 
 Record a Stellar flow once. Get an on-chain policy that permits exactly that — enforced by consensus.
 
@@ -7,7 +7,7 @@ warden synthesizes least-authority policies for Soroban smart accounts (C-addres
 ## Try it (no clone, no keys, ~minutes)
 
 ```bash
-npx @warden/cli demo
+npx @stellar-warden/cli demo
 ```
 
 `demo` runs the whole loop on **Stellar testnet** with throwaway keys (funded by friendbot):

@@ -37,22 +37,22 @@ import {
   xdr,
   Address,
 } from "@stellar/stellar-sdk";
-import { explainPolicy, type Recording } from "@warden/core";
+import { explainPolicy, type Recording } from "@stellar-warden/core";
 import {
   getLatestLedger,
   getLedgerEntries,
   recordContractCall,
   simulateTransaction,
-} from "@warden/recorder";
-import { generateCrate, inferPolicy } from "@warden/synthesizer";
-import { runCargoTests, writeCrate } from "@warden/harness";
+} from "@stellar-warden/recorder";
+import { generateCrate, inferPolicy } from "@stellar-warden/synthesizer";
+import { runCargoTests, writeCrate } from "@stellar-warden/harness";
 import {
   buildAddSignerTx,
   signSmartAccountAuthEntry,
   specToStoredRules,
   submitTx,
   TxFailedError,
-} from "@warden/sdk";
+} from "@stellar-warden/sdk";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, "../..");

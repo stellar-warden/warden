@@ -10,7 +10,7 @@ import {
   nativeToScVal,
   xdr,
 } from "@stellar/stellar-sdk";
-import type { PolicySpec, ScValue } from "@warden/core";
+import type { PolicySpec, ScValue } from "@stellar-warden/core";
 import {
   getLatestLedger,
   getLedgerEntries,
@@ -19,10 +19,10 @@ import {
   simulateTransaction,
   toScVal,
   type GetTxResult,
-} from "@warden/recorder";
+} from "@stellar-warden/recorder";
 
 /**
- * @warden/sdk — the install seam.
+ * @stellar-warden/sdk — the install seam.
  *
  * v1 targets the bundled smart-account-lite contract, whose on-chain rule
  * format is compact:

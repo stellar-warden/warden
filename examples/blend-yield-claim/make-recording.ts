@@ -18,10 +18,10 @@ import { writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { Address, Keypair } from "@stellar/stellar-sdk";
-import type { Recording } from "@warden/core";
-import { explainPolicy } from "@warden/core";
-import { generateCrate, inferPolicy } from "@warden/synthesizer";
-import { writeCrate } from "@warden/harness";
+import type { Recording } from "@stellar-warden/core";
+import { explainPolicy } from "@stellar-warden/core";
+import { generateCrate, inferPolicy } from "@stellar-warden/synthesizer";
+import { writeCrate } from "@stellar-warden/harness";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, "../..");

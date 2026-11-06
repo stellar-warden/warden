@@ -4,11 +4,11 @@ How this codebase maps onto the SCF RFP's deliverables. Legend: ✅ working in t
 
 | RFP deliverable | Status | Where / plan |
 |---|---|---|
-| Record or simulate a Stellar transaction sequence | ✅ | `@warden/recorder` — raw RPC `simulateTransaction`, full `SorobanAuthorizationEntry` tree extraction (root + sub-invocations) |
+| Record or simulate a Stellar transaction sequence | ✅ | `@stellar-warden/recorder` — raw RPC `simulateTransaction`, full `SorobanAuthorizationEntry` tree extraction (root + sub-invocations) |
 | Synthesize context rule + minimum set of policies | ✅ (own IR) / 🔶 (OZ form) | `inferPolicy` produces least-authority `PolicySpec`; `generateCrate` emits enforcing Rust. OZ adapter = codegen backend targeting OZ context-rule/policy contracts, developed against the pinned OZ release with OZ as reviewer (tranche 1–2) |
 | Output compilable Rust (Soroban) | ✅ | Deterministic templates; standalone crate; CI compiles and tests it |
 | Simulation harness with permit AND deny cases | ✅ | `denygen` mutation matrix + generated `tests/permit_deny.rs`; window accumulation/reset sequence tests; differential check vs TS reference evaluator |
-| AI-assisted (MCP server + agent skill) | ✅ MCP / ⬜ skill | `@warden/mcp-server`: record_flow, propose_policy, refine_policy, explain_policy, synthesize_rust, run_harness, build_install_tx. Claude Skill = thin instruction layer over the same tools (tranche 1) |
+| AI-assisted (MCP server + agent skill) | ✅ MCP / ⬜ skill | `@stellar-warden/mcp-server`: record_flow, propose_policy, refine_policy, explain_policy, synthesize_rust, run_harness, build_install_tx. Claude Skill = thin instruction layer over the same tools (tranche 1) |
 | Wallet integration: record → generate → simulate → install | 🔶 | Full loop works headless (CLI/MCP → unsigned `add_signer` XDR for owner signature). Wallet-embedded UX with a C-Address-cohort wallet partner = tranche 2–3 |
 | Three documented walkthroughs (Blend yield; SEP-41 subscription; bounded Soroswap delegation) | 🔶 | `examples/blend-yield-claim` runs offline in CI **and live on testnet** (`run-testnet.ts`, hashes in `testnet-run.json`); subscription + Soroswap walkthroughs = tranche 2 |
 | Audit of the synthesizer itself | ⬜ | Scoped for Audit Bank at tranche 3; the deliberately small trusted base (policy-core + templates + lite account, see ARCHITECTURE.md) is the audit-cost argument |

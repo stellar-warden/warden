@@ -3,7 +3,7 @@ import {
   PolicySpecError,
   type PolicySpec,
   type Recording,
-} from "@warden/core";
+} from "@stellar-warden/core";
 import { evalEntry, newState } from "./eval.js";
 
 /**

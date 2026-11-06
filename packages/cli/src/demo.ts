@@ -27,21 +27,21 @@ import {
   nativeToScVal,
   xdr,
 } from "@stellar/stellar-sdk";
-import { explainPolicy, type Recording } from "@warden/core";
+import { explainPolicy, type Recording } from "@stellar-warden/core";
 import {
   getLatestLedger,
   getLedgerEntries,
   recordContractCall,
   simulateTransaction,
-} from "@warden/recorder";
-import { inferPolicy } from "@warden/synthesizer";
+} from "@stellar-warden/recorder";
+import { inferPolicy } from "@stellar-warden/synthesizer";
 import {
   buildAddSignerTx,
   signSmartAccountAuthEntry,
   specToStoredRules,
   submitTx,
   TxFailedError,
-} from "@warden/sdk";
+} from "@stellar-warden/sdk";
 
 const TESTNET_PASSPHRASE = "Test SDF Network ; September 2015";
 const EXPLORER = "https://stellar.expert/explorer/testnet";

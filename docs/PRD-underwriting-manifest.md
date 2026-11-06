@@ -1,6 +1,6 @@
 # PRD — Risk Manifest Export (Warden Tranche Extension)
 
-**Working name:** warden risk manifest (`@warden/manifest`)
+**Working name:** warden risk manifest (`@stellar-warden/manifest`)
 **Version:** 0.1 (proposal) · 2026-09-16
 **Status:** Roadmap extension, not committed tranche work. Gated by Phase 0 below — do not start Phase 1 build until the kill criterion in §2.3 is checked.
 **Relationship to warden core:** additive only. This document proposes a new, optional export surface on top of the existing `PolicySpec` pipeline described in `docs/ARCHITECTURE.md`. It does not modify `packages/core`, `packages/synthesizer`, `packages/harness`, `contracts/policy-core`, or `contracts/smart-account-lite`, and it does not change warden's trust model (see §6.4).
@@ -10,7 +10,7 @@
 
 ## 1. One-paragraph summary
 
-Warden already produces something no Stellar lending protocol currently consumes: a policy whose worst-case behavior is not a promise but a proof. A synthesized `PolicySpec` — deny-by-default, rolling-counter caps, argument-level constraints — is checked twice (a TS reference evaluator and generated Rust under real `soroban-sdk`) and then enforced on-chain by the account's own `__check_auth`, not by the borrower's good behavior. Meanwhile, Stellar's flagship lending market, Blend, sizes every borrow limit purely from posted collateral value, with no term for identity, history, or behavioral guarantee (VERIFIED, §2.3). This document proposes `@warden/manifest`: a small, additive export that turns an already-installed, already-proven policy into a signed, machine-readable "risk manifest" — a hard ceiling a lending protocol could read and price against, instead of the fixed collateral-factor formula it uses today. This is not a lending product. It is an export format plus a reference/mock consumer, built to find out whether any real lending protocol would use it before anyone builds the lending side.
+Warden already produces something no Stellar lending protocol currently consumes: a policy whose worst-case behavior is not a promise but a proof. A synthesized `PolicySpec` — deny-by-default, rolling-counter caps, argument-level constraints — is checked twice (a TS reference evaluator and generated Rust under real `soroban-sdk`) and then enforced on-chain by the account's own `__check_auth`, not by the borrower's good behavior. Meanwhile, Stellar's flagship lending market, Blend, sizes every borrow limit purely from posted collateral value, with no term for identity, history, or behavioral guarantee (VERIFIED, §2.3). This document proposes `@stellar-warden/manifest`: a small, additive export that turns an already-installed, already-proven policy into a signed, machine-readable "risk manifest" — a hard ceiling a lending protocol could read and price against, instead of the fixed collateral-factor formula it uses today. This is not a lending product. It is an export format plus a reference/mock consumer, built to find out whether any real lending protocol would use it before anyone builds the lending side.
 
 ---
 
@@ -104,7 +104,7 @@ Not specified in detail here — this is explicitly out of scope until Phase 0's
 ```
  existing warden pipeline (unchanged)                new, additive
 ┌─────────────────────────────────────┐    ┌──────────────────────────────┐
-│ record → synthesize → prove →        │    │ @warden/manifest              │
+│ record → synthesize → prove →        │    │ @stellar-warden/manifest              │
 │ install (packages/core, synthesizer, │───▶│ exportManifest(spec, account) │
 │ harness, sdk — see ARCHITECTURE.md)  │    │ pure projection, no inference │
 └─────────────────────────────────────┘    └───────────────┬───────────────┘
@@ -138,21 +138,21 @@ Not specified in detail here — this is explicitly out of scope until Phase 0's
 ### 6.3 Key technical decisions
 
 1. **Projection, not re-inference.** The manifest is derived only from an already-synthesized, already-tested `PolicySpec` — it adds no new judgment, no new LLM step, and no new attack surface on the advisor loop described in `docs/ARCHITECTURE.md`. If the spec changes, the manifest must be re-exported; there is no live sync (PROPOSED — see §8 for staleness handling).
-2. **Owner signs, warden doesn't.** Consistent with the existing trust-model table in `docs/ARCHITECTURE.md` ("owner key: root authority... session key: act within installed rules... NOT trusted to: hold keys"), the manifest-signing step reuses the owner's existing off-band signature flow. `@warden/manifest` itself has no keys and cannot sign anything.
+2. **Owner signs, warden doesn't.** Consistent with the existing trust-model table in `docs/ARCHITECTURE.md` ("owner key: root authority... session key: act within installed rules... NOT trusted to: hold keys"), the manifest-signing step reuses the owner's existing off-band signature flow. `@stellar-warden/manifest` itself has no keys and cannot sign anything.
 3. **No new on-chain component.** The manifest is an off-chain artifact (signed JSON), not a new Soroban contract. A consumer that wants an on-chain guarantee should read the account's installed policy state directly (already possible today via `smart-account-lite` and `contracts/policy-core`, per `docs/ARCHITECTURE.md`); the manifest is a convenience/discovery layer, not the source of truth. The source of truth remains `__check_auth`.
 4. **Staleness is the consumer's problem to price, not warden's to solve here.** A manifest is a snapshot. If the owner later installs a wider policy, an old manifest becomes stale. Phase 1 addresses this only by including an `exportedAt` timestamp and the on-chain policy's storage key so a diligent consumer can re-verify against chain state before relying on it (§7); a push/webhook staleness-invalidation mechanism is explicitly deferred (§10 open questions), not solved by this phase.
 
 ### 6.4 Trust-model conformance (must-hold invariant)
 
-This table is a restatement of `docs/ARCHITECTURE.md`'s existing trust model, with the new component's authority level made explicit. No row for `@warden/manifest` should ever read anything other than "propose/export," matching the existing "model" and "synthesizer" rows:
+This table is a restatement of `docs/ARCHITECTURE.md`'s existing trust model, with the new component's authority level made explicit. No row for `@stellar-warden/manifest` should ever read anything other than "propose/export," matching the existing "model" and "synthesizer" rows:
 
 | component | trusted to | NOT trusted to |
 |---|---|---|
-| `@warden/manifest` (new) | project an already-proven `PolicySpec` into a signed export format | infer policy content, hold keys, sign anything, decide what a lender should do with the export |
+| `@stellar-warden/manifest` (new) | project an already-proven `PolicySpec` into a signed export format | infer policy content, hold keys, sign anything, decide what a lender should do with the export |
 | owner key (existing) | root authority; now also signs the manifest, same as it signs `add_signer` | — |
 | lending-protocol consumer (external, not part of warden) | read the manifest, decide its own risk pricing | rely on the manifest as a substitute for verifying live on-chain state, per §6.3.4 |
 
-If any future implementation of this proposal requires `@warden/manifest` to hold a key, call a lending contract, or make a credit decision, that implementation has violated this PRD's scope and should be rejected at review.
+If any future implementation of this proposal requires `@stellar-warden/manifest` to hold a key, call a lending contract, or make a credit decision, that implementation has violated this PRD's scope and should be rejected at review.
 
 ---
 
@@ -176,7 +176,7 @@ If any future implementation of this proposal requires `@warden/manifest` to hol
   "denyUnmatched": true,                  // mirrors PolicySpec's denyUnmatched: z.literal(true) invariant — always true by construction, included for consumer clarity
   "ownerSignature": "ed25519:...",        // signed by the account owner's key, off-band — warden does not sign
   "provenance": {
-    "generatedBy": "@warden/manifest v0.1",
+    "generatedBy": "@stellar-warden/manifest v0.1",
     "sourcePolicySpecVersion": "..."
   }
 }

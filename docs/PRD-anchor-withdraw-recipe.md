@@ -112,14 +112,14 @@ No project — on Stellar or elsewhere — combines (a) a policy synthesized fro
                  │ record a withdraw() call
                  ▼
   ┌─────────────────────────────┐        ┌──────────────────────────┐
-  │ @warden/recorder             │───────▶│ contracts/fixtures/       │
+  │ @stellar-warden/recorder             │───────▶│ contracts/fixtures/       │
   │ simulateTransaction against  │        │   mock-anchor (new)       │
   │ the deployed/local fixture   │        │ withdraw(from, amount,    │
   └──────────────┬───────────────┘        │   memo) → debit + event   │
                  │ auth-entry tree         └──────────────────────────┘
                  ▼
   ┌─────────────────────────────┐
-  │ @warden/synthesizer          │
+  │ @stellar-warden/synthesizer          │
   │ infer: cap type question     │
   │ (per-call / weekly / total)  │
   │ denygen: wrong counterparty, │
@@ -128,14 +128,14 @@ No project — on Stellar or elsewhere — combines (a) a policy synthesized fro
                  │ PolicySpec + generated Rust
                  ▼
   ┌─────────────────────────────┐        ┌──────────────────────────┐
-  │ @warden/harness               │───────▶│ contracts/generated/      │
+  │ @stellar-warden/harness               │───────▶│ contracts/generated/      │
   │ cargo test: permit + deny     │        │   warden_policy_anchor_   │
   │ matrix under real soroban-sdk │        │   withdraw (new crate)    │
   └──────────────┬───────────────┘        └──────────────────────────┘
                  │ tests pass
                  ▼
   ┌─────────────────────────────┐        ┌──────────────────────────┐
-  │ @warden/sdk                   │───────▶│ smart-account-lite         │
+  │ @stellar-warden/sdk                   │───────▶│ smart-account-lite         │
   │ unsigned add_signer XDR        │        │ (existing testnet          │
   │ (owner signs off-band)         │        │  instance or a fresh one)  │
   └─────────────────────────────┘        │ __check_auth enforces on-  │
@@ -149,10 +149,10 @@ No project — on Stellar or elsewhere — combines (a) a policy synthesized fro
 | Component | Responsibility | Reused from warden (unchanged) | New for this example |
 |---|---|---|---|
 | `mock-anchor` fixture | Stand-in for the on-chain leg of a withdrawal call | Cargo/Soroban project scaffolding, `contracts/fixtures/mock-protocols` as a template | New Rust contract: `withdraw(from, amount, memo)` |
-| Recording | Capture the demoed flow | `@warden/recorder`, RPC client (`packages/recorder/src/rpc.ts`) unchanged | New recording script, new recorded call shape |
-| Synthesis | Infer minimal policy, generate deny cases, codegen | `@warden/synthesizer` entirely unchanged | None — this is the point: the existing inference/denygen/codegen pipeline should require zero changes to handle a new contract shape, since it operates on the generic `SorobanAuthorizationEntry` tree, not domain-specific logic |
-| Proof | Differential test execution | `@warden/harness`, `contracts/policy-core` unchanged | New generated crate, `contracts/generated/warden_policy_anchor_withdraw` |
-| Install | Unsigned `add_signer` XDR | `@warden/sdk`, `contracts/smart-account-lite` unchanged | None |
+| Recording | Capture the demoed flow | `@stellar-warden/recorder`, RPC client (`packages/recorder/src/rpc.ts`) unchanged | New recording script, new recorded call shape |
+| Synthesis | Infer minimal policy, generate deny cases, codegen | `@stellar-warden/synthesizer` entirely unchanged | None — this is the point: the existing inference/denygen/codegen pipeline should require zero changes to handle a new contract shape, since it operates on the generic `SorobanAuthorizationEntry` tree, not domain-specific logic |
+| Proof | Differential test execution | `@stellar-warden/harness`, `contracts/policy-core` unchanged | New generated crate, `contracts/generated/warden_policy_anchor_withdraw` |
+| Install | Unsigned `add_signer` XDR | `@stellar-warden/sdk`, `contracts/smart-account-lite` unchanged | None |
 | Example scripts/docs | Reproducible walkthrough | `blend-yield-claim`'s script shape and README table format as direct templates | `examples/anchor-withdraw/*` |
 
 ### 6.3 Key technical decisions
@@ -170,8 +170,8 @@ No new persistent data model beyond what warden's pipeline already produces per 
 
 | Artifact | Shape | Source |
 |---|---|---|
-| `recording.json` | Existing `Recording` model (packages/core) — unchanged shape, new contents (a `withdraw` call instead of a `claim`/`transfer` pair) | `@warden/recorder` output |
-| `PolicySpec` (in-memory / generated crate) | Existing IR — one rule for `withdraw`, allowlisting the demoed counterparty and memo pattern, with a rolling-window cap on `amount` | `@warden/synthesizer` output |
+| `recording.json` | Existing `Recording` model (packages/core) — unchanged shape, new contents (a `withdraw` call instead of a `claim`/`transfer` pair) | `@stellar-warden/recorder` output |
+| `PolicySpec` (in-memory / generated crate) | Existing IR — one rule for `withdraw`, allowlisting the demoed counterparty and memo pattern, with a rolling-window cap on `amount` | `@stellar-warden/synthesizer` output |
 | `testnet.json` | Existing shape (contract IDs) — extended with the new `mock-anchor` contract ID | `scripts/deploy-testnet.sh` |
 | `testnet-run.json` | Existing shape (recorded run + tx hashes) — new run for this example | `run-testnet.ts` output |
 

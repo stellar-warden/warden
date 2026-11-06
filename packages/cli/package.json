@@ -1,5 +1,5 @@
 {
-  "name": "@warden/cli",
+  "name": "@stellar-warden/cli",
   "version": "0.1.0",
   "type": "module",
   "bin": {
@@ -14,11 +14,11 @@
     "typecheck": "tsc -p . --noEmit"
   },
   "dependencies": {
-    "@warden/core": "workspace:*",
-    "@warden/recorder": "workspace:*",
-    "@warden/synthesizer": "workspace:*",
-    "@warden/harness": "workspace:*",
-    "@warden/sdk": "workspace:*",
+    "@stellar-warden/core": "workspace:*",
+    "@stellar-warden/recorder": "workspace:*",
+    "@stellar-warden/synthesizer": "workspace:*",
+    "@stellar-warden/harness": "workspace:*",
+    "@stellar-warden/sdk": "workspace:*",
     "@stellar/stellar-sdk": "^16.0.1"
   },
   "description": "warden CLI: record a Stellar flow, synthesize a least-authority policy, prove it on-chain (`warden demo`)",

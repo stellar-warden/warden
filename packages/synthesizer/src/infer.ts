@@ -8,7 +8,7 @@ import {
   type Rule,
   type ScValue,
   type Signer,
-} from "@warden/core";
+} from "@stellar-warden/core";
 
 export interface OpenQuestion {
   ruleId: string;

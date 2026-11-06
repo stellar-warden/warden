@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { explainPolicy } from "@warden/core";
+import { explainPolicy } from "@stellar-warden/core";
 import { HeuristicAdvisor, ModelAdvisor } from "../advisor.js";
 import { generateCrate } from "../codegen.js";
 import { generateCases } from "../denygen.js";

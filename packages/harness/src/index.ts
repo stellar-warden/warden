@@ -1,7 +1,7 @@
 import { spawn } from "node:child_process";
 import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
-import type { GeneratedCrate } from "@warden/synthesizer";
+import type { GeneratedCrate } from "@stellar-warden/synthesizer";
 
 /**
  * The harness is the boundary where synthesized policies meet the real

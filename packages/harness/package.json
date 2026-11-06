@@ -1,5 +1,5 @@
 {
-  "name": "@warden/harness",
+  "name": "@stellar-warden/harness",
   "version": "0.1.0",
   "type": "module",
   "main": "dist/index.js",
@@ -12,8 +12,8 @@
     "typecheck": "tsc -p . --noEmit"
   },
   "dependencies": {
-    "@warden/core": "workspace:*",
-    "@warden/synthesizer": "workspace:*"
+    "@stellar-warden/core": "workspace:*",
+    "@stellar-warden/synthesizer": "workspace:*"
   },
   "description": "warden generated-crate writer and cargo permit/deny test runner",
   "license": "Apache-2.0",

@@ -19,17 +19,17 @@ import {
   parseRecording,
   type PolicySpec,
   type Recording,
-} from "@warden/core";
-import { recordContractCall } from "@warden/recorder";
+} from "@stellar-warden/core";
+import { recordContractCall } from "@stellar-warden/recorder";
 import {
   anthropicChat,
   generateCrate,
   HeuristicAdvisor,
   inferPolicy,
   ModelAdvisor,
-} from "@warden/synthesizer";
-import { runCargoTests, writeCrate } from "@warden/harness";
-import { buildAddSignerTx, specToStoredRules } from "@warden/sdk";
+} from "@stellar-warden/synthesizer";
+import { runCargoTests, writeCrate } from "@stellar-warden/harness";
+import { buildAddSignerTx, specToStoredRules } from "@stellar-warden/sdk";
 
 const HOME = resolve(process.env.WARDEN_HOME ?? ".warden");
 const GENERATED = resolve(process.env.WARDEN_GENERATED_DIR ?? "contracts/generated");
@@ -125,7 +125,7 @@ server.registerTool(
   async ({ recordingId, spec }) => {
     const recording = parseRecording(await load("recordings", recordingId));
     const parsed = parsePolicySpec(spec);
-    const { HeuristicAdvisor: H } = await import("@warden/synthesizer");
+    const { HeuristicAdvisor: H } = await import("@stellar-warden/synthesizer");
     const outcome = await new H().refine(parsed, recording);
     await save("specs", recordingId, parsed);
     const warns = outcome.warnings.length ? `\nWARNINGS:\n${outcome.warnings.join("\n")}` : "";

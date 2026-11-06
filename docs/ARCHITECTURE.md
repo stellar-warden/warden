@@ -9,20 +9,20 @@ warden turns a **demonstrated transaction flow** into an **on-chain authorizatio
 ```
             facts                    judgment                  determinism
   ┌───────────────────┐   ┌───────────────────────┐   ┌────────────────────────┐
-  │ @warden/recorder  │   │ @warden/synthesizer    │   │ @warden/synthesizer    │
+  │ @stellar-warden/recorder  │   │ @stellar-warden/synthesizer    │   │ @stellar-warden/synthesizer    │
   │ simulate tx via   │──▶│ infer: least-authority │──▶│ codegen: PolicySpec →  │
   │ raw RPC, extract  │   │ draft + questions      │   │ Rust crate + tests     │
   │ auth entry trees  │   │ advisor: LLM refines,  │   └───────────┬────────────┘
   └───────────────────┘   │ schema+eval gated      │               │
                           └───────────────────────┘               ▼
   ┌───────────────────┐   ┌───────────────────────┐   ┌────────────────────────┐
-  │ smart-account-lite│◀──│ @warden/sdk            │◀──│ @warden/harness        │
+  │ smart-account-lite│◀──│ @stellar-warden/sdk            │◀──│ @stellar-warden/harness        │
   │ __check_auth      │   │ unsigned add_signer tx │   │ cargo test: every      │
   │ enforces on-chain │   │ (owner signs off-band) │   │ permit + deny case     │
   └───────────────────┘   └───────────────────────┘   └────────────────────────┘
 ```
 
-Interfaces to the same pipeline: `@warden/mcp-server` (conversational, for Claude or any MCP client) and `@warden/cli` (headless, for humans and CI). Both are thin; neither adds authority.
+Interfaces to the same pipeline: `@stellar-warden/mcp-server` (conversational, for Claude or any MCP client) and `@stellar-warden/cli` (headless, for humans and CI). Both are thin; neither adds authority.
 
 ## The IR is the system
 
@@ -57,7 +57,7 @@ The MCP server never signs. `build_install_tx` returns unsigned XDR; the owner r
 
 ## Seams (deliberate, documented)
 
-- **smart-account-lite vs generated crates.** The lite contract enforces compact rules: any number of exact/allowlist argument matches (compared on-chain as raw values, so every argument type is covered) plus one rolling cap per rule, with counters kept per session signer. That is everything `inferPolicy` produces, so an inferred spec installs unedited; `@warden/sdk` *refuses* the remainder (a second cap on one rule, two rules for one function) rather than approximating. Full-fidelity enforcement of those is the generated crate embedded in an account, and the **OpenZeppelin smart-accounts adapter** (tranche work): mapping PolicySpec onto OZ context rules + policies is a codegen backend swap — the IR, evaluator, deny generator, and harness are unchanged.
+- **smart-account-lite vs generated crates.** The lite contract enforces compact rules: any number of exact/allowlist argument matches (compared on-chain as raw values, so every argument type is covered) plus one rolling cap per rule, with counters kept per session signer. That is everything `inferPolicy` produces, so an inferred spec installs unedited; `@stellar-warden/sdk` *refuses* the remainder (a second cap on one rule, two rules for one function) rather than approximating. Full-fidelity enforcement of those is the generated crate embedded in an account, and the **OpenZeppelin smart-accounts adapter** (tranche work): mapping PolicySpec onto OZ context rules + policies is a codegen backend swap — the IR, evaluator, deny generator, and harness are unchanged.
 - **Fees.** Session agents hold no XLM; installs and agent transactions are expected to flow through a fee-sponsoring relayer (OZ Relayer / Launchtube pattern). Out of scope here, by design.
 - **Counter storage rent.** `Counters` persists under one persistent key; TTL bumping is the account's job (extend in `__check_auth` — tracked as tranche work in RFP-MAPPING.md).
 - **Classic interop.** Payouts to G-addresses via SAC transfers work; SEP flows that assume classic accounts need the corridor-side smoothing described in the roadmap.

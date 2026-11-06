@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parsePolicySpec, type ArgConstraint } from "@warden/core";
+import { parsePolicySpec, type ArgConstraint } from "@stellar-warden/core";
 import { specToStoredRules, UnsupportedSpecError } from "../index.js";
 
 const ACCOUNT = "CA6ZBKTMVZC66Q4VGGSZCCEVCPCBWNENE3H7NORVMKAJOZQSOOX2YHCU";

@@ -1,5 +1,5 @@
 {
-  "name": "@warden/sdk",
+  "name": "@stellar-warden/sdk",
   "version": "0.1.0",
   "type": "module",
   "main": "dist/index.js",
@@ -13,9 +13,9 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@warden/core": "workspace:*",
+    "@stellar-warden/core": "workspace:*",
     "@stellar/stellar-sdk": "^16.0.1",
-    "@warden/recorder": "workspace:*"
+    "@stellar-warden/recorder": "workspace:*"
   },
   "description": "warden PolicySpec to on-chain rules, unsigned add_signer tx, smart-account auth-entry signing",
   "license": "Apache-2.0",

@@ -1,5 +1,5 @@
 {
-  "name": "@warden/synthesizer",
+  "name": "@stellar-warden/synthesizer",
   "version": "0.1.0",
   "type": "module",
   "main": "dist/index.js",
@@ -13,7 +13,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@warden/core": "workspace:*",
+    "@stellar-warden/core": "workspace:*",
     "zod": "^3.24.0"
   },
   "description": "warden policy inference, reference evaluator, deny-case generation and Rust codegen",

@@ -1,14 +1,14 @@
 {
-  "name": "@warden/examples",
+  "name": "@stellar-warden/examples",
   "private": true,
   "version": "0.1.0",
   "type": "module",
   "dependencies": {
     "@stellar/stellar-sdk": "^16.0.1",
-    "@warden/core": "workspace:*",
-    "@warden/harness": "workspace:*",
-    "@warden/recorder": "workspace:*",
-    "@warden/sdk": "workspace:*",
-    "@warden/synthesizer": "workspace:*"
+    "@stellar-warden/core": "workspace:*",
+    "@stellar-warden/harness": "workspace:*",
+    "@stellar-warden/recorder": "workspace:*",
+    "@stellar-warden/sdk": "workspace:*",
+    "@stellar-warden/synthesizer": "workspace:*"
   }
 }

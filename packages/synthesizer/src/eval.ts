@@ -1,5 +1,5 @@
-import type { Invocation, PolicySpec, RecordedEntry, Rule, ScValue } from "@warden/core";
-import { flattenInvocations } from "@warden/core";
+import type { Invocation, PolicySpec, RecordedEntry, Rule, ScValue } from "@stellar-warden/core";
+import { flattenInvocations } from "@stellar-warden/core";
 
 /**
  * Reference evaluator for PolicySpec semantics, in TypeScript.

@@ -1,5 +1,5 @@
 {
-  "name": "@warden/recorder",
+  "name": "@stellar-warden/recorder",
   "version": "0.1.0",
   "type": "module",
   "main": "dist/index.js",
@@ -13,7 +13,7 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@warden/core": "workspace:*",
+    "@stellar-warden/core": "workspace:*",
     "@stellar/stellar-sdk": "^16.0.1"
   },
   "description": "warden raw Soroban RPC client and auth-entry extraction",

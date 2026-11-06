@@ -1,5 +1,5 @@
-import type { Invocation, PolicySpec, Recording, ScValue } from "@warden/core";
-import { flattenInvocations } from "@warden/core";
+import type { Invocation, PolicySpec, Recording, ScValue } from "@stellar-warden/core";
+import { flattenInvocations } from "@stellar-warden/core";
 
 /**
  * Deny-case generation — the half of verification that makes this a policy

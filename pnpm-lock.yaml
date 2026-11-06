@@ -29,19 +29,19 @@ importers:
       '@stellar/stellar-sdk':
         specifier: ^16.0.1
         version: 16.0.1
-      '@warden/core':
+      '@stellar-warden/core':
         specifier: workspace:*
         version: link:../packages/core
-      '@warden/harness':
+      '@stellar-warden/harness':
         specifier: workspace:*
         version: link:../packages/harness
-      '@warden/recorder':
+      '@stellar-warden/recorder':
         specifier: workspace:*
         version: link:../packages/recorder
-      '@warden/sdk':
+      '@stellar-warden/sdk':
         specifier: workspace:*
         version: link:../packages/sdk
-      '@warden/synthesizer':
+      '@stellar-warden/synthesizer':
         specifier: workspace:*
         version: link:../packages/synthesizer
 
@@ -50,19 +50,19 @@ importers:
       '@stellar/stellar-sdk':
         specifier: ^16.0.1
         version: 16.0.1
-      '@warden/core':
+      '@stellar-warden/core':
         specifier: workspace:*
         version: link:../core
-      '@warden/harness':
+      '@stellar-warden/harness':
         specifier: workspace:*
         version: link:../harness
-      '@warden/recorder':
+      '@stellar-warden/recorder':
         specifier: workspace:*
         version: link:../recorder
-      '@warden/sdk':
+      '@stellar-warden/sdk':
         specifier: workspace:*
         version: link:../sdk
-      '@warden/synthesizer':
+      '@stellar-warden/synthesizer':
         specifier: workspace:*
         version: link:../synthesizer
 
@@ -74,10 +74,10 @@ importers:
 
   packages/harness:
     dependencies:
-      '@warden/core':
+      '@stellar-warden/core':
         specifier: workspace:*
         version: link:../core
-      '@warden/synthesizer':
+      '@stellar-warden/synthesizer':
         specifier: workspace:*
         version: link:../synthesizer
 
@@ -86,19 +86,19 @@ importers:
       '@modelcontextprotocol/sdk':
         specifier: ^1.29.0
         version: 1.29.0(zod@3.25.76)
-      '@warden/core':
+      '@stellar-warden/core':
         specifier: workspace:*
         version: link:../core
-      '@warden/harness':
+      '@stellar-warden/harness':
         specifier: workspace:*
         version: link:../harness
-      '@warden/recorder':
+      '@stellar-warden/recorder':
         specifier: workspace:*
         version: link:../recorder
-      '@warden/sdk':
+      '@stellar-warden/sdk':
         specifier: workspace:*
         version: link:../sdk
-      '@warden/synthesizer':
+      '@stellar-warden/synthesizer':
         specifier: workspace:*
         version: link:../synthesizer
       zod:
@@ -110,7 +110,7 @@ importers:
       '@stellar/stellar-sdk':
         specifier: ^16.0.1
         version: 16.0.1
-      '@warden/core':
+      '@stellar-warden/core':
         specifier: workspace:*
         version: link:../core
 
@@ -119,16 +119,16 @@ importers:
       '@stellar/stellar-sdk':
         specifier: ^16.0.1
         version: 16.0.1
-      '@warden/core':
+      '@stellar-warden/core':
         specifier: workspace:*
         version: link:../core
-      '@warden/recorder':
+      '@stellar-warden/recorder':
         specifier: workspace:*
         version: link:../recorder
 
   packages/synthesizer:
     dependencies:
-      '@warden/core':
+      '@stellar-warden/core':
         specifier: workspace:*
         version: link:../core
       zod:

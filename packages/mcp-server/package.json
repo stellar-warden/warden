@@ -1,5 +1,5 @@
 {
-  "name": "@warden/mcp-server",
+  "name": "@stellar-warden/mcp-server",
   "version": "0.1.0",
   "type": "module",
   "main": "dist/index.js",
@@ -15,12 +15,12 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
-    "@warden/core": "workspace:*",
-    "@warden/recorder": "workspace:*",
-    "@warden/synthesizer": "workspace:*",
-    "@warden/harness": "workspace:*",
+    "@stellar-warden/core": "workspace:*",
+    "@stellar-warden/recorder": "workspace:*",
+    "@stellar-warden/synthesizer": "workspace:*",
+    "@stellar-warden/harness": "workspace:*",
     "zod": "^3.24.0",
-    "@warden/sdk": "workspace:*"
+    "@stellar-warden/sdk": "workspace:*"
   },
   "description": "warden MCP server: AI-assisted policy builder for Stellar smart accounts",
   "license": "Apache-2.0",

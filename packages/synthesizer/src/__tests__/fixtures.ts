@@ -1,4 +1,4 @@
-import type { Recording, Signer } from "@warden/core";
+import type { Recording, Signer } from "@stellar-warden/core";
 
 /** Synthetic strkey (charset-valid; TS-side tests never checksum). */
 export const acct = (c: string) => `C${c.repeat(55)}`;

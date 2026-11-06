@@ -6,7 +6,7 @@ import {
   nativeToScVal,
   xdr,
 } from "@stellar/stellar-sdk";
-import type { Invocation, RecordedEntry, Recording, ScValue } from "@warden/core";
+import type { Invocation, RecordedEntry, Recording, ScValue } from "@stellar-warden/core";
 import { getLedgerEntries, simulateTransaction, type RpcConfig } from "./rpc.js";
 
 export interface RecordCallParams {
