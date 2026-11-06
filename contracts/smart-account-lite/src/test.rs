@@ -15,18 +15,17 @@ fn setup(env: &Env) -> (Address, Address, Address, Address) {
 }
 
 fn transfer_rule(env: &Env, token: &Address, dests: &[&Address], cap: i128) -> StoredRule {
-    let mut d = SVec::new(env);
+    let mut d: SVec<Val> = SVec::new(env);
     for a in dests {
-        d.push_back((*a).clone());
+        d.push_back((*a).into_val(env));
     }
     StoredRule {
         arg_count: 3,
         cap,
         cap_index: if cap > 0 { 2 } else { NONE },
         contract: token.clone(),
-        dest_index: 1,
-        dests: d,
         function: Symbol::new(env, "transfer"),
+        matches: vec![env, ArgMatch { allowed: d, index: 1 }],
         window: 604_800,
     }
 }
@@ -67,7 +66,7 @@ fn denies_unlisted_destination() {
     let mut c = Counters::new(&env);
     assert_eq!(
         enforce_rules(&env, &rules, &transfer_ctx(&env, &token, &from, &mallory, 1), &mut c),
-        Err(AccError::DestNotAllowed)
+        Err(AccError::ArgNotAllowed)
     );
 }
 
@@ -140,6 +139,58 @@ fn negative_amount_denies() {
         enforce_rules(&env, &rules, &transfer_ctx(&env, &token, &from, &alice, -1), &mut c),
         Err(AccError::CapExceeded)
     );
+}
+
+#[test]
+fn several_matches_per_rule_compare_type_and_value() {
+    let env = Env::default();
+    let (token, alice, _, mallory) = setup(&env);
+    let from = Address::generate(&env);
+    let mut rule = transfer_rule(&env, &token, &[&alice], 0);
+    // pin `from` too, and require an exact i128 amount
+    rule.matches.push_back(ArgMatch { allowed: vec![&env, from.into_val(&env)], index: 0 });
+    rule.matches.push_back(ArgMatch { allowed: vec![&env, 7i128.into_val(&env)], index: 2 });
+    let rules = vec![&env, rule];
+    let mut c = Counters::new(&env);
+    let run = |ctx: &Context, c: &mut Counters| enforce_rules(&env, &rules, ctx, c);
+
+    assert_eq!(run(&transfer_ctx(&env, &token, &from, &alice, 7), &mut c), Ok(()));
+    assert_eq!(
+        run(&transfer_ctx(&env, &token, &mallory, &alice, 7), &mut c),
+        Err(AccError::ArgNotAllowed)
+    );
+    assert_eq!(
+        run(&transfer_ctx(&env, &token, &from, &alice, 8), &mut c),
+        Err(AccError::ArgNotAllowed)
+    );
+    // same number, wrong type (u32 7 is not i128 7)
+    let ctx = Context::Contract(ContractContext {
+        contract: token.clone(),
+        fn_name: Symbol::new(&env, "transfer"),
+        args: vec![&env, from.into_val(&env), alice.into_val(&env), 7u32.into_val(&env)],
+    });
+    assert_eq!(run(&ctx, &mut c), Err(AccError::ArgNotAllowed));
+}
+
+#[test]
+fn rules_on_the_same_function_keep_separate_counters() {
+    let env = Env::default();
+    let (token, alice, _, _) = setup(&env);
+    let other_token = Address::generate(&env);
+    let from = Address::generate(&env);
+    let mut hourly = transfer_rule(&env, &other_token, &[&alice], 10);
+    hourly.window = 3_600;
+    let rules = vec![&env, transfer_rule(&env, &token, &[&alice], 100), hourly];
+    let mut c = Counters::new(&env);
+    let pay = |t: &Address, amount: i128, c: &mut Counters| {
+        enforce_rules(&env, &rules, &transfer_ctx(&env, t, &from, &alice, amount), c)
+    };
+
+    assert_eq!(pay(&token, 100, &mut c), Ok(()));
+    assert_eq!(pay(&other_token, 10, &mut c), Ok(()), "other rule has its own budget");
+    env.ledger().with_mut(|li| li.timestamp += 3_601);
+    assert_eq!(pay(&other_token, 10, &mut c), Ok(()), "hourly window reset");
+    assert_eq!(pay(&token, 1, &mut c), Err(AccError::CapExceeded), "weekly window must not reset");
 }
 
 #[test]

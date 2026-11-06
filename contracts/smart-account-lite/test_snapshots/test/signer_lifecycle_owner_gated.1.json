@@ -18,7 +18,7 @@
               "function_name": "add_signer",
               "args": [
                 {
-                  "bytes": "29fd2fa74901f14cedb29b32bbcf6654a679ad44ed1562b965d8b44cda785acd"
+                  "bytes": "867eaf62c58310997a298d26567b5222196bd059d13f3ff09bb81119ee6f3d71"
                 },
                 {
                   "u32": 0
@@ -43,7 +43,7 @@
               "function_name": "remove_signer",
               "args": [
                 {
-                  "bytes": "29fd2fa74901f14cedb29b32bbcf6654a679ad44ed1562b965d8b44cda785acd"
+                  "bytes": "867eaf62c58310997a298d26567b5222196bd059d13f3ff09bb81119ee6f3d71"
                 }
               ]
             }
@@ -87,7 +87,7 @@
                         ]
                       },
                       "val": {
-                        "bytes": "e6b72502d8425e85ca7208360b00081c57f8748da695a48c5120fc9ea88f099d"
+                        "bytes": "e95467f7ff8df482ccb4fb92102c873650f41f112d89cc07171bec9961649bff"
                       }
                     }
                   ]

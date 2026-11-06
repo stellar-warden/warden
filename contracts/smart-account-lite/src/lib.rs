@@ -3,23 +3,31 @@
 //! signers whose every authorization passes deny-by-default rules inside
 //! `__check_auth`.
 //!
-//! This is the v1 install target. It is intentionally a SUBSET of what the
-//! synthesizer can express (one address allowlist + one rolling cap per rule);
-//! richer specs run through the generated-crate path and, on the roadmap, an
-//! OpenZeppelin smart-accounts adapter. The subset exists so the end-to-end
-//! story — record → synthesize → verify → install → enforced on-chain — is
-//! demonstrable without waiting for the adapter.
+//! This is the v1 install target. Its compact rules cover what the
+//! synthesizer infers — any number of exact/allowlist argument matches per
+//! rule (compared as raw values, so every argument type works) plus ONE
+//! rolling cap per rule. Specs with several caps on one rule run through the
+//! generated-crate path and, on the roadmap, an OpenZeppelin smart-accounts
+//! adapter.
 #![no_std]
 
-use policy_core::{arg_address, arg_i128, Counters};
+use policy_core::{arg_i128, Counters};
 use soroban_sdk::auth::{Context, CustomAccountInterface};
 use soroban_sdk::crypto::Hash;
 use soroban_sdk::{
-    contract, contracterror, contractimpl, contracttype, Address, BytesN, Env, Symbol, Vec,
+    contract, contracterror, contractimpl, contracttype, Address, BytesN, Env, Symbol, Val, Vec,
 };
 
-/// u32::MAX sentinel meaning "no constraint at this slot" — mirrored in @warden/sdk.
+/// u32::MAX sentinel meaning "no cap on this rule" — mirrored in @warden/sdk.
 const NONE: u32 = u32::MAX;
+
+/// Argument `index` must equal one of `allowed` (one entry = exact match).
+#[contracttype]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ArgMatch {
+    pub allowed: Vec<Val>,
+    pub index: u32,
+}
 
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -28,9 +36,8 @@ pub struct StoredRule {
     pub cap: i128,
     pub cap_index: u32,
     pub contract: Address,
-    pub dest_index: u32,
-    pub dests: Vec<Address>,
     pub function: Symbol,
+    pub matches: Vec<ArgMatch>,
     pub window: u64,
 }
 
@@ -46,6 +53,8 @@ pub struct SessionSigner {
 pub enum DataKey {
     Owner,
     Signer(BytesN<32>),
+    /// Rolling counters of one session signer (persistent storage).
+    Counters(BytesN<32>),
 }
 
 #[contracterror]
@@ -59,7 +68,7 @@ pub enum AccError {
     UnsupportedContext = 5,
     NoMatchingRule = 6,
     ArgCountMismatch = 7,
-    DestNotAllowed = 8,
+    ArgNotAllowed = 8,
     BadArgType = 9,
     CapExceeded = 10,
 }
@@ -91,6 +100,8 @@ impl SmartAccountLite {
     /// is exactly what the unsigned tx from `@warden/sdk` requires.
     pub fn add_signer(env: Env, pk: BytesN<32>, expires_ledger: u32, rules: Vec<StoredRule>) {
         env.current_contract_address().require_auth();
+        // Counters are keyed by rule position, so new rules start from zero.
+        env.storage().persistent().remove(&DataKey::Counters(pk.clone()));
         env.storage()
             .instance()
             .set(&DataKey::Signer(pk), &SessionSigner { expires_ledger, rules });
@@ -98,6 +109,7 @@ impl SmartAccountLite {
 
     pub fn remove_signer(env: Env, pk: BytesN<32>) {
         env.current_contract_address().require_auth();
+        env.storage().persistent().remove(&DataKey::Counters(pk.clone()));
         env.storage().instance().remove(&DataKey::Signer(pk));
     }
 
@@ -150,11 +162,12 @@ impl CustomAccountInterface for SmartAccountLite {
         }
 
         // 4. Deny-by-default rule enforcement over EVERY context in the tree.
-        let mut counters = Counters::load(&env);
+        let counters_key = DataKey::Counters(signature.public_key);
+        let mut counters = Counters::load_from(&env, &counters_key);
         for ctx in auth_contexts.iter() {
             enforce_rules(&env, &signer.rules, &ctx, &mut counters)?;
         }
-        counters.save(&env);
+        counters.save_to(&env, &counters_key);
         Ok(())
     }
 }
@@ -169,26 +182,28 @@ pub fn enforce_rules(
         Context::Contract(cc) => cc,
         _ => return Err(AccError::UnsupportedContext),
     };
-    for rule in rules.iter() {
+    for (i, rule) in rules.iter().enumerate() {
         if rule.contract != cc.contract || rule.function != cc.fn_name {
             continue;
         }
         if cc.args.len() != rule.arg_count {
             return Err(AccError::ArgCountMismatch);
         }
-        if rule.dest_index != NONE {
-            let dest =
-                arg_address(env, &cc.args, rule.dest_index).ok_or(AccError::BadArgType)?;
-            if !rule.dests.iter().any(|d| d == dest) {
-                return Err(AccError::DestNotAllowed);
+        for m in rule.matches.iter() {
+            let arg = cc.args.get(m.index).ok_or(AccError::BadArgType)?;
+            // Host-side deep comparison: equal type AND equal value.
+            if !m.allowed.contains(arg) {
+                return Err(AccError::ArgNotAllowed);
             }
         }
         if rule.cap_index != NONE && rule.cap > 0 {
             let amount = arg_i128(env, &cc.args, rule.cap_index).ok_or(AccError::BadArgType)?;
+            // One cap per rule, so the rule's position identifies its counter:
+            // two rules on the same function never share (or reset) a window.
             if !counters.add_checked(
                 env,
                 rule.function.clone(),
-                rule.cap_index,
+                i as u32,
                 rule.window,
                 amount,
                 rule.cap,

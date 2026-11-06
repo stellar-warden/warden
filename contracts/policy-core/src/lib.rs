@@ -7,7 +7,7 @@
 #![no_std]
 
 use soroban_sdk::{
-    contracttype, symbol_short, Address, Bytes, Env, Map, String, Symbol, TryFromVal, Val, Vec,
+    contracttype, symbol_short, Address, Bytes, Env, IntoVal, Map, String, Symbol, TryFromVal, Val, Vec,
 };
 
 // ---------------------------------------------------------------------------
@@ -60,6 +60,21 @@ impl Counters {
 
     pub fn save(&self, env: &Env) {
         env.storage().persistent().set(&COUNTERS_KEY, &self.map);
+    }
+
+    /// Like `load`/`save`, under a caller-chosen key — lets an account keep
+    /// one counter set per signer so signers cannot drain each other's caps.
+    pub fn load_from<K: IntoVal<Env, Val>>(env: &Env, key: &K) -> Self {
+        let map = env
+            .storage()
+            .persistent()
+            .get::<K, Map<CounterKey, CounterVal>>(key)
+            .unwrap_or_else(|| Map::new(env));
+        Self { map }
+    }
+
+    pub fn save_to<K: IntoVal<Env, Val>>(&self, env: &Env, key: &K) {
+        env.storage().persistent().set(key, &self.map);
     }
 
     /// Returns true iff `amount` fits under `cap` within the current window,
@@ -124,7 +139,7 @@ arg_accessor!(arg_bytes, Bytes);
 mod test {
     use super::*;
     use soroban_sdk::testutils::Ledger;
-    use soroban_sdk::{vec, Env, IntoVal};
+    use soroban_sdk::{vec, Env};
 
     fn env_at(ts: u64) -> Env {
         let env = Env::default();
