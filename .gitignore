@@ -6,3 +6,4 @@ contracts/generated/*
 !contracts/generated/.gitkeep
 .env
 .turbo/
+plan.md

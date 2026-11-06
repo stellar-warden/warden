@@ -4,6 +4,9 @@
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc -p .",
     "typecheck": "tsc -p . --noEmit",
@@ -12,5 +15,13 @@
   "dependencies": {
     "@warden/core": "workspace:*",
     "@stellar/stellar-sdk": "^16.0.1"
+  },
+  "description": "warden raw Soroban RPC client and auth-entry extraction",
+  "license": "Apache-2.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

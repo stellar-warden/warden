@@ -2,13 +2,31 @@
   "name": "@warden/cli",
   "version": "0.1.0",
   "type": "module",
-  "bin": { "warden": "dist/index.js" },
-  "scripts": { "build": "tsc -p .", "typecheck": "tsc -p . --noEmit" },
+  "bin": {
+    "warden": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "wasm"
+  ],
+  "scripts": {
+    "build": "tsc -p .",
+    "typecheck": "tsc -p . --noEmit"
+  },
   "dependencies": {
     "@warden/core": "workspace:*",
     "@warden/recorder": "workspace:*",
     "@warden/synthesizer": "workspace:*",
     "@warden/harness": "workspace:*",
-    "@warden/sdk": "workspace:*"
+    "@warden/sdk": "workspace:*",
+    "@stellar/stellar-sdk": "^16.0.1"
+  },
+  "description": "warden CLI: record a Stellar flow, synthesize a least-authority policy, prove it on-chain (`warden demo`)",
+  "license": "Apache-2.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

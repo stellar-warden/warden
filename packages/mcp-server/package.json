@@ -6,6 +6,9 @@
   "bin": {
     "warden-mcp": "dist/index.js"
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc -p .",
     "typecheck": "tsc -p . --noEmit"
@@ -18,5 +21,13 @@
     "@warden/harness": "workspace:*",
     "zod": "^3.24.0",
     "@warden/sdk": "workspace:*"
+  },
+  "description": "warden MCP server: AI-assisted policy builder for Stellar smart accounts",
+  "license": "Apache-2.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

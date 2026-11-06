@@ -4,6 +4,23 @@
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "scripts": { "build": "tsc -p .", "typecheck": "tsc -p . --noEmit" },
-  "dependencies": { "@warden/core": "workspace:*", "@warden/synthesizer": "workspace:*" }
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p .",
+    "typecheck": "tsc -p . --noEmit"
+  },
+  "dependencies": {
+    "@warden/core": "workspace:*",
+    "@warden/synthesizer": "workspace:*"
+  },
+  "description": "warden generated-crate writer and cargo permit/deny test runner",
+  "license": "Apache-2.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=22"
+  }
 }

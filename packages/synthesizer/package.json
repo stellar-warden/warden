@@ -4,6 +4,24 @@
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "scripts": { "build": "tsc -p .", "typecheck": "tsc -p . --noEmit", "test": "vitest run" },
-  "dependencies": { "@warden/core": "workspace:*", "zod": "^3.24.0" }
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p .",
+    "typecheck": "tsc -p . --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@warden/core": "workspace:*",
+    "zod": "^3.24.0"
+  },
+  "description": "warden policy inference, reference evaluator, deny-case generation and Rust codegen",
+  "license": "Apache-2.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=22"
+  }
 }
