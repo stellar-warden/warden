@@ -29,10 +29,10 @@ The full loop — record → synthesize → verify → install → **enforced by
 against deployed contracts. A committed run
 ([examples/blend-yield-claim/testnet-run.json](examples/blend-yield-claim/testnet-run.json)):
 the owner installs a synthesized policy on a deployed
-[smart-account-lite](https://stellar.expert/explorer/testnet/contract/CA6ZBKTMVZC66Q4VGGSZCCEVCPCBWNENE3H7NORVMKAJOZQSOOX2YHCU)
+[smart-account-lite](https://stellar.expert/explorer/testnet/contract/CBNJFZ5IYUFKZHNBPH6HECBLGXGBKSTQV3WLNLGO4RVOPB2PWLSYT2YT)
 instance, a session key claims yield and makes a payroll transfer within its cap
 (both permitted), and a second transfer that busts the weekly cap is
-[**rejected on-chain**](https://stellar.expert/explorer/testnet/tx/eb13f1030478c5acf9c5fb2232a504ca775f5870c2782d203f06265b3c785510)
+[**rejected on-chain**](https://stellar.expert/explorer/testnet/tx/f320d7111ae4e96a85fd17cfa4c86778edf6eeb4321ef3b876dd97c67c9bb984)
 by `__check_auth`. Reproduce with `scripts/deploy-testnet.sh` +
 `pnpm tsx examples/blend-yield-claim/run-testnet.ts` — see the
 [example README](examples/blend-yield-claim/README.md) for all four transaction hashes.
@@ -45,7 +45,7 @@ Copy `.mcp.json.example` into your Claude configuration (adjust paths), then:
 
 Tools: `record_flow` · `propose_policy` · `refine_policy` · `explain_policy` · `synthesize_rust` · `run_harness` · `build_install_tx`. Installation always returns **unsigned** XDR for the owner's key — warden never signs, never holds keys.
 
-Headless equivalents: `warden record|propose|explain|synth|test|install` (see `packages/cli`).
+Headless equivalents: `warden record|propose|refine|explain|synth|test|install` (see `packages/cli`). The CLI also closes the loop the MCP server deliberately leaves open: `warden install --submit` signs the install as the owner and submits it, and `warden invoke` makes a call as the session key — printing `PERMITTED: tx <hash>` or `DENIED: <reason>`. Keys come from `WARDEN_OWNER_SECRET` / `WARDEN_SESSION_SECRET` / `WARDEN_FEE_SECRET` in the environment, never from flags.
 
 ## Layout
 
@@ -58,7 +58,7 @@ packages/mcp-server   the conversational front door (stdio MCP)
 packages/sdk          PolicySpec → compact on-chain rules + unsigned add_signer tx
 packages/cli          same pipeline, headless
 contracts/policy-core         audited-once primitives: rolling counters, typed arg accessors
-contracts/smart-account-lite  reference custom account: __check_auth over compact rules
+contracts/smart-account-lite  reference custom account: __check_auth over compact rules (arg matches + rolling cap)
 contracts/fixtures            mock SEP-41 token + Blend-shaped pool for walkthroughs
 examples/blend-yield-claim    full offline pipeline run (CI: `differential` job)
 ```

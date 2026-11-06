@@ -7,7 +7,7 @@
  *   1. record   — live simulations of claim + payroll transfer capture the
  *                 auth entries the flow actually requires
  *   2. propose  — inferPolicy generalizes the recording (least authority)
- *   3. refine   — the documented human-review step (see REFINES below)
+ *   3. review   — the plain-English policy the owner reads before signing
  *   4. synth    — generate the Rust policy crate + permit/deny matrix
  *   5. verify   — cargo test under the real soroban-sdk
  *   6. install  — owner signs add_signer; the policy is now consensus-enforced
@@ -37,7 +37,7 @@ import {
   xdr,
   Address,
 } from "@stellar/stellar-sdk";
-import { explainPolicy, parsePolicySpec, type PolicySpec, type Recording } from "@warden/core";
+import { explainPolicy, type Recording } from "@warden/core";
 import {
   getLatestLedger,
   getLedgerEntries,
@@ -127,13 +127,10 @@ async function main(): Promise<void> {
   });
   for (const q of questions) log("propose", `? [${q.ruleId} arg${q.argIndex}] ${q.appliedDefault}`);
 
-  // -- 3. refine (the human-review step, applied explicitly) ------------------
-  // smart-account-lite's compact rules hold ONE address constraint per rule:
-  //   - claim.reserve_id (u32) → any: reserve choice is not a security boundary
-  //   - transfer.from → any:   from must equal the account anyway — a transfer
-  //     from anyone else never routes through this account's __check_auth
-  const spec = refine(draft);
-  log("refine", "claim.arg1 → any (u32 reserve id); transfer.arg0 → any (require_auth-bound)");
+  // -- 3. review --------------------------------------------------------------
+  // The inferred spec is installed as-is: smart-account-lite enforces every
+  // exact/allowlist match it contains, so nothing is loosened to fit.
+  const spec = draft;
   console.log(explainPolicy(spec));
 
   // -- 4+5. synth + verify ----------------------------------------------------
@@ -225,15 +222,6 @@ async function main(): Promise<void> {
     ),
   );
   log("done", `wrote ${join(here, "testnet-run.json")}`);
-}
-
-function refine(draft: PolicySpec): PolicySpec {
-  const spec = structuredClone(draft);
-  for (const rule of spec.rules) {
-    if (rule.function === "claim") rule.args[1] = { kind: "any", argIndex: 1 };
-    if (rule.function === "transfer") rule.args[0] = { kind: "any", argIndex: 0 };
-  }
-  return parsePolicySpec(spec);
 }
 
 /** Build + simulate a session-key invocation, returning the signed, submit-ready XDR. */

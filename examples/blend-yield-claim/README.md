@@ -17,7 +17,9 @@ CI runs exactly this as the `differential` job.
 
 `run-testnet.ts` is the same flow against real deployed contracts — record via
 live simulation, synthesize, prove with the generated harness, install with the
-owner's signature, then demonstrate the policy holding under consensus:
+owner's signature, then demonstrate the policy holding under consensus. The
+inferred policy is installed exactly as proposed — nothing is loosened to fit
+the account:
 
 ```bash
 scripts/deploy-testnet.sh                 # deploys + seeds, writes testnet.json
@@ -33,10 +35,10 @@ hash is verifiable on [stellar.expert](https://stellar.expert/explorer/testnet)
 
 | Step | Tx | Result |
 |---|---|---|
-| `add_signer` (owner-signed install) | [`669e6647…`](https://stellar.expert/explorer/testnet/tx/669e66472d061dd1790a49772ae787b999c582df28fe9726f6bcd0d3ed77976b) | ✅ policy live on [`CA6ZBKTM…YHCU`](https://stellar.expert/explorer/testnet/contract/CA6ZBKTMVZC66Q4VGGSZCCEVCPCBWNENE3H7NORVMKAJOZQSOOX2YHCU) |
-| session key claims yield | [`e55d9fc1…`](https://stellar.expert/explorer/testnet/tx/e55d9fc1b53dbdf7b281d415f463b4aa2a93312b62a0475ad786637cea200e68) | ✅ permitted by rule 1 |
-| payroll transfer, 120 ≤ cap 150 | [`ad238e0c…`](https://stellar.expert/explorer/testnet/tx/ad238e0c4308d21f18738aa18d1b9143645dfe01ffc12dc1ebcf927ba51e545c) | ✅ permitted by rule 2 |
-| second transfer, sum 240 > cap 150 | [`eb13f103…`](https://stellar.expert/explorer/testnet/tx/eb13f1030478c5acf9c5fb2232a504ca775f5870c2782d203f06265b3c785510) | ❌ **rejected on-chain** — `__check_auth` `CapExceeded`, ledger 3614696 |
+| `add_signer` (owner-signed install) | [`0fb75fa9…`](https://stellar.expert/explorer/testnet/tx/0fb75fa91f7a7e451195c48a50112456f43dec1ba7992d2c97bbd32b3ebf046f) | ✅ policy live on [`CBNJFZ5I…T2YT`](https://stellar.expert/explorer/testnet/contract/CBNJFZ5IYUFKZHNBPH6HECBLGXGBKSTQV3WLNLGO4RVOPB2PWLSYT2YT) |
+| session key claims yield | [`dffd3ce2…`](https://stellar.expert/explorer/testnet/tx/dffd3ce2ea2b7c796236aa9235af28399593b12d29a8f49c59cdc8e47d4a75b0) | ✅ permitted by rule 1 |
+| payroll transfer, 120 ≤ cap 150 | [`eb4aa452…`](https://stellar.expert/explorer/testnet/tx/eb4aa4523ede3f49cbec78087c61384c8c832b738e464fdcf21d317660902f22) | ✅ permitted by rule 2 |
+| second transfer, sum 240 > cap 150 | [`f320d711…`](https://stellar.expert/explorer/testnet/tx/f320d7111ae4e96a85fd17cfa4c86778edf6eeb4321ef3b876dd97c67c9bb984) | ❌ **rejected on-chain** — `__check_auth` `CapExceeded`, ledger 5072224 |
 
 The deny transaction was simulated while the rolling counter was still empty
 (exactly what a leaked or greedy session key would do) and rejected by
