@@ -33,7 +33,8 @@ import { buildAddSignerTx, specToStoredRules } from "@warden/sdk";
 
 const HOME = resolve(process.env.WARDEN_HOME ?? ".warden");
 const GENERATED = resolve(process.env.WARDEN_GENERATED_DIR ?? "contracts/generated");
-const POLICY_CORE = process.env.WARDEN_POLICY_CORE ?? "../../contracts/policy-core";
+// Relative to the generated crate dir (contracts/generated/<name>/), not the cwd.
+const POLICY_CORE = process.env.WARDEN_POLICY_CORE ?? "../../policy-core";
 const RPC = process.env.WARDEN_RPC_URL ?? "https://soroban-testnet.stellar.org";
 const PASSPHRASE = process.env.WARDEN_NETWORK_PASSPHRASE ?? "Test SDF Network ; September 2015";
 
