@@ -2,16 +2,26 @@
 /**
  * warden CLI — same pipeline as the MCP server, for humans and CI.
  *
+ *   warden demo                                        (whole loop on testnet: fresh keys, deploy, install, permit/deny)
  *   warden record   --account C.. --source G.. --contract C.. --method transfer --args '[...]' [--label s]
  *   warden propose  --recording <id> --signer <hex64> [--expires N] [--intent s] [--model]
+ *   warden refine   --recording <id> --spec <edited-spec.json>
  *   warden explain  --recording <id>
  *   warden synth    --recording <id>
  *   warden test     --recording <id>
- *   warden install  --recording <id> --source G..
+ *   warden install  --recording <id> --source G..      (prints UNSIGNED xdr)
+ *   warden install  --recording <id> --submit          (owner signs + submits)
+ *   warden invoke   --account C.. --contract C.. --method transfer --args '[...]'
+ *                                                      (session key acts under the policy)
  *
  * Env: WARDEN_RPC_URL, WARDEN_NETWORK_PASSPHRASE, WARDEN_HOME,
  *      WARDEN_GENERATED_DIR, WARDEN_POLICY_CORE, ANTHROPIC_API_KEY (for --model)
+ * Keys (S... secrets, read from env only, never from flags):
+ *      WARDEN_FEE_SECRET      funded account paying fees   (install --submit, invoke)
+ *      WARDEN_OWNER_SECRET    the account's owner key      (install --submit)
+ *      WARDEN_SESSION_SECRET  the agent's session key      (invoke)
  */
+import { runDemo } from "./demo.js";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import {
@@ -30,7 +40,16 @@ import {
   ModelAdvisor,
 } from "@warden/synthesizer";
 import { runCargoTests, writeCrate } from "@warden/harness";
-import { buildAddSignerTx, specToStoredRules } from "@warden/sdk";
+import {
+  buildAddSignerTx,
+  buildInvokeTx,
+  Keypair,
+  PolicyDeniedError,
+  signSmartAccountTx,
+  specToStoredRules,
+  submitTx,
+  TxFailedError,
+} from "@warden/sdk";
 
 const HOME = resolve(process.env.WARDEN_HOME ?? ".warden");
 const GENERATED = resolve(process.env.WARDEN_GENERATED_DIR ?? "contracts/generated");
@@ -76,6 +95,16 @@ async function main(): Promise<void> {
       for (const w of outcome.warnings) console.log(`! ${w}`);
       break;
     }
+    case "refine": {
+      const id = need(flags, "recording");
+      const recording = parseRecording(await load("recordings", id));
+      const spec = parsePolicySpec(JSON.parse(await readFile(need(flags, "spec"), "utf8")));
+      const outcome = await new HeuristicAdvisor().refine(spec, recording);
+      await save("specs", id, spec);
+      console.log(explainPolicy(spec));
+      for (const w of outcome.warnings) console.log(`! ${w}`);
+      break;
+    }
     case "explain": {
       console.log(explainPolicy(await loadSpec(need(flags, "recording"))));
       break;
@@ -105,19 +134,47 @@ async function main(): Promise<void> {
     case "install": {
       const id = need(flags, "recording");
       const spec = await loadSpec(id);
+      const submit = "submit" in flags;
+      const fee = submit ? secret("WARDEN_FEE_SECRET") : undefined;
       const xdrB64 = await buildAddSignerTx({
         rpcUrl: RPC,
         networkPassphrase: PASSPHRASE,
-        source: need(flags, "source"),
+        source: fee?.publicKey() ?? need(flags, "source"),
         spec,
         rules: specToStoredRules(spec),
       });
-      console.log("UNSIGNED install tx (sign with the OWNER key, then submit):");
-      console.log(xdrB64);
+      if (!fee) {
+        console.log("UNSIGNED install tx (sign with the OWNER key, then submit — or rerun with --submit):");
+        console.log(xdrB64);
+        break;
+      }
+      const hash = await signAndSubmit(xdrB64, spec.account, secret("WARDEN_OWNER_SECRET"), fee);
+      if (hash) console.log(`policy installed on ${spec.account}: tx ${hash}`);
+      break;
+    }
+    case "invoke": {
+      const fee = secret("WARDEN_FEE_SECRET");
+      const account = need(flags, "account");
+      const xdrB64 = await buildInvokeTx({
+        rpcUrl: RPC,
+        networkPassphrase: PASSPHRASE,
+        source: fee.publicKey(),
+        contract: need(flags, "contract"),
+        method: need(flags, "method"),
+        args: JSON.parse(need(flags, "args")) as ScValue[],
+      });
+      const hash = await signAndSubmit(xdrB64, account, secret("WARDEN_SESSION_SECRET"), fee);
+      if (hash) console.log(`PERMITTED: tx ${hash}`);
+      break;
+    }
+    case "demo": {
+      const r = await runDemo({ rpcUrl: RPC, passphrase: PASSPHRASE });
+      console.log("\nwarden demo complete — policy enforced by consensus.");
+      console.log(JSON.stringify(r, null, 2));
       break;
     }
     default:
-      console.log("commands: record | propose | explain | synth | test | install (see file header)");
+      console.log("commands: demo | record | propose | refine | explain | synth | test | install | invoke (see file header)");
       process.exitCode = cmd ? 1 : 0;
   }
 }
@@ -135,6 +192,35 @@ function parseFlags(args: string[]): Record<string, string> {
     } else out[key] = "true";
   }
   return out;
+}
+
+/** Sign as the smart account, submit, and report a policy rejection as DENIED instead of a stack trace. */
+async function signAndSubmit(txB64: string, account: string, signer: Keypair, fee: Keypair): Promise<string | undefined> {
+  try {
+    const signed = await signSmartAccountTx({
+      rpcUrl: RPC,
+      networkPassphrase: PASSPHRASE,
+      txB64,
+      account,
+      signer,
+      feeSigner: fee,
+    });
+    return (await submitTx({ rpcUrl: RPC }, signed)).hash;
+  } catch (err) {
+    if (!(err instanceof PolicyDeniedError) && !(err instanceof TxFailedError)) throw err;
+    console.log(`DENIED: ${err.message}`);
+    process.exitCode = 2;
+    return undefined;
+  }
+}
+
+function secret(name: string): Keypair {
+  const v = process.env[name]?.trim();
+  if (!v) {
+    console.error(`missing env ${name} (an S... secret key)`);
+    process.exit(1);
+  }
+  return Keypair.fromSecret(v);
 }
 
 function need(flags: Record<string, string>, key: string): string {
